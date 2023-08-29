@@ -4,11 +4,75 @@ const productCollections = require('./productCollections');
 const touristRoutes = require('./touristRoutes.json');
 const touristRouteNotFound = require('./touristRouteNotFound.json');
 const touristRouteDetails = require('./touristRouteDetails.json');
+const imgMap = require('../images/imgmap.json');
+const fs = require('fs');
+const path = require("path");
+const parse = require('node-html-parser').parse;
 
 function sleep(ms) {
     return new Promise((resolve) => {
       setTimeout(resolve, ms);
     });
+}
+
+let imgCache = {};
+
+function img2Local(url) {
+    if (imgCache.hasOwnProperty(url)) {
+        return imgCache[url];
+    }
+    if (imgMap.hasOwnProperty(url)) {
+        // const jpg = path.resolve(__dirname, `../images/${imgMap[url]}.jpg`);        
+        // const data = fs.readFileSync(jpg);
+        // const base64 = 'data:image/jpeg;base64, ' + Buffer.from(data, 'binary').toString('base64');        
+        // imgCache[url] = base64;
+        // return base64;
+        const jpg = path.resolve(__dirname, `../images/${imgMap[url]}.jpg`);
+        if (fs.existsSync(jpg)) {
+            url = `http://127.0.0.1:3001/${imgMap[url]}.jpg`;
+            return url;
+        }
+    }
+    return url;
+}
+
+function convertImg2Local(json) {
+    if (Array.isArray(json)) {
+        json.map((i) => {
+            if (i.touristRoutes) {
+                i.touristRoutes.map((j) => {
+                    j.touristRoutePictures.map((k) => {
+                        k.url = img2Local(k.url);
+                    })
+                })
+            } else if (i.touristRoutePictures) {
+                i.touristRoutePictures.map((k) => {
+                    k.url = img2Local(k.url);
+                })
+            }
+        })
+    } else if (json.touristRoutePictures) {
+        json.touristRoutePictures.map((k) => {
+            k.url = img2Local(k.url);
+        })
+    }
+    return json;
+}
+
+function convertDetailFeature2Local(json) {
+    const root = parse(json.features);
+    root.querySelectorAll('img').forEach((img) => {
+        img.removeAttribute('data-src');
+        let url = img.getAttribute('src');
+        if (url.startsWith('//')) {
+            url = 'http:' + url;
+        }
+        const src = img2Local(url);
+        img.setAttribute('src', src);
+        console.log(img.parentNode.toString());
+    })
+    json.features = root.toString();
+    return json;
 }
   
 /* GET home page. */
@@ -32,14 +96,14 @@ router.get('/productCollections', async function (req, res, next) {
     console.log('sleeping...');
     await sleep(1000);
     console.log('ok');
-    res.json(productCollections);
+    res.json(convertImg2Local(productCollections));
 });
 
 router.get('/touristRoutes/:touristRouteId', async function (req, res, next) {
     for (let i = 0; i < touristRouteDetails.length; i++){
         let route = touristRouteDetails[i];
         if (route.id === req.params.touristRouteId) {
-            return res.json(route);
+            return res.json(convertDetailFeature2Local(convertImg2Local(route)));
         }
     }
     res.status(422).json(touristRouteNotFound);
@@ -117,7 +181,7 @@ router.get('/touristRoutes', async function (req, res, next) {
 
     res.set('x-pagination',JSON.stringify(pagination));
     
-    return res.json(out);
+    return res.json(convertImg2Local(out));
 })
 
 module.exports = router;
