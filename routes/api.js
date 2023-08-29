@@ -3,6 +3,7 @@ var router = express.Router();
 const productCollections = require('./productCollections');
 const touristRoutes = require('./touristRoutes.json');
 const touristRouteNotFound = require('./touristRouteNotFound.json');
+const touristRouteDetails = require('./touristRouteDetails.json');
 
 function sleep(ms) {
     return new Promise((resolve) => {
@@ -35,8 +36,8 @@ router.get('/productCollections', async function (req, res, next) {
 });
 
 router.get('/touristRoutes/:touristRouteId', async function (req, res, next) {
-    for (let i = 0; i < touristRoutes.length; i++){
-        let route = touristRoutes[i];
+    for (let i = 0; i < touristRouteDetails.length; i++){
+        let route = touristRouteDetails[i];
         if (route.id === req.params.touristRouteId) {
             return res.json(route);
         }
