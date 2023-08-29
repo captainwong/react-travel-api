@@ -1,0 +1,8 @@
+{
+    "previousPageLink": null,
+    "nextPageLink": "http://123.56.149.216:8080/api/TouristRoutes?pageNumber=2&pageSize=10",
+    "totalCount": 16,
+    "pageSize": 10,
+    "currentPage": 1,
+    "totalPages": 2
+}
