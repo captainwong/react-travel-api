@@ -8,12 +8,7 @@ const imgMap = require('../images/imgmap.json');
 const fs = require('fs');
 const path = require("path");
 const parse = require('node-html-parser').parse;
-
-function sleep(ms) {
-    return new Promise((resolve) => {
-      setTimeout(resolve, ms);
-    });
-}
+const sleep = require('./sleep');
 
 let imgCache = {};
 

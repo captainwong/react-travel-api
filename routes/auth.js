@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 const jwt = require('jsonwebtoken');
 const config = require('../config');
+const sleep = require('./sleep');
 
 let users = {};
 
@@ -14,7 +15,7 @@ router.post('/register', async function (req, res, next) {
     users[req.body.email] = {
         password: req.body.password,        
     }
-
+    await sleep(1000); // for Botton loading spin
     return res.status(204).end();
 });
 
@@ -31,6 +32,7 @@ router.post('/signin', async function (req, res, next) {
     }
 
     const token = jwt.sign({ email: req.body.email }, config.jwt.secret, { expiresIn: config.jwt.expiresIn });
+    await sleep(1000); // for Botton loading spin
     return res.status(200).json({
         token: token,
     });
