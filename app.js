@@ -29,46 +29,6 @@ app.use(express.static(path.join(__dirname, 'images')));
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/auth', authRouter);
-
-// app.use(function(req, res, next) {
-//   res.header("Access-Control-Allow-Origin", "*");
-//   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-//   next();
-// });
-
-function error(status, msg) {
-  var err = new Error(msg);
-  err.status = status;  
-  
-  return err;
-}
-
-function sleep(ms) {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
-}
-
-// app.use('/api', async function (req, res, next) {
-//   const key = req.headers['x-icode'];
-//   if (!key) {
-//     console.log(req.headers);
-//     return res.status(200).json({
-//       status: 400,
-//       msg: 'x-icode required',
-//     });
-//   }
-//   const apiKeys = ['foo', 'bar', 'baz'];
-//   if (apiKeys.indexOf(key) === -1) {
-//     return res.status(200).json({
-//       status: 400,
-//       msg: 'invalid x-icode',
-//     });
-//   }
-//   req.x_icode = key;
-//   //await sleep(1000);
-//   next();
-// });
 app.use('/api', apiRouter);
 
 // catch 404 and forward to error handler

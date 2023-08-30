@@ -74,8 +74,7 @@ function convertDetailFeature2Local(json) {
     json.features = root.toString();
     return json;
 }
-  
-/* GET home page. */
+
 router.get('/productCollections', async function (req, res, next) {
     const key = req.headers['x-icode'];
     if (!key) {
@@ -85,7 +84,7 @@ router.get('/productCollections', async function (req, res, next) {
             msg: 'x-icode required',
         });
     }
-    const apiKeys = ['foo', 'bar', 'baz'];
+    const apiKeys = ['foo', 'bar', 'baz', 'D4D928FF7C10128D'];
     if (apiKeys.indexOf(key) === -1) {
         return res.status(400).json({
             status: 400,
