@@ -17,7 +17,7 @@ router.post('/register', async function (req, res, next) {
   return res.status(204).end();
 });
 
-router.post('/signin', async function (req, res, next) {
+router.post('/login', async function (req, res, next) {
   console.log(req.body);
   if (!req.body.email || !req.body.password) {
     return res.status(422).json("email, passowrd and confirmPassword requried");

@@ -14,6 +14,24 @@ const cartRouter = require('./cart');
 
 router.use('/shoppingCart', cartRouter);
 
+router.use(async (req, res, next) => {
+  const key = req.headers['x-icode'];
+  if (!key) {
+    console.log(req.headers);
+    return res.status(400).json({
+      status: 400,
+      msg: 'x-icode required',
+    });
+  }
+  const apiKeys = ['foo', 'bar', 'baz', 'D4D928FF7C10128D', 'F5F433A587BDBCC7'];
+  if (apiKeys.indexOf(key) === -1) {
+    return res.status(400).json({
+      status: 400,
+      msg: 'invalid x-icode',
+    });
+  }
+  next();
+});
 
 let imgCache = {};
 
@@ -76,22 +94,6 @@ function convertDetailFeature2Local(json) {
 }
 
 router.get('/productCollections', async function (req, res, next) {
-  const key = req.headers['x-icode'];
-  if (!key) {
-    console.log(req.headers);
-    return res.status(400).json({
-      status: 400,
-      msg: 'x-icode required',
-    });
-  }
-  const apiKeys = ['foo', 'bar', 'baz', 'D4D928FF7C10128D'];
-  if (apiKeys.indexOf(key) === -1) {
-    return res.status(400).json({
-      status: 400,
-      msg: 'invalid x-icode',
-    });
-  }
-
   console.log('sleeping...');
   await sleep(200);
   console.log('ok');

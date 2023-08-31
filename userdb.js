@@ -5,6 +5,17 @@ function CartItem(id, touristRouteId, originalPrice, price) {
   this.price = price;
 }
 
+function OrderItem() {
+
+}
+
+function Order(id, userId) {
+  this.id = id;
+  this.userId = userId;
+  this.state = "Pending";
+  this.orderItems = [];
+}
+
 function User(email, password) {
   this.id = email;
   this.email = email;
@@ -71,7 +82,7 @@ const userdb = {
   debug: () => {
     console.log(users);
     return users;
-  }
+  },
 }
 
 module.exports = userdb;
