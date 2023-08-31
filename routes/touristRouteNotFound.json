@@ -1,13 +1,13 @@
 {
-    "errors": {
-        "touristRouteId": [
-            "The value 'asdf' is not valid."
-        ]
-    },
-    "type": "无所谓",
-    "title": "数据验证失败",
-    "status": 422,
-    "detail": "请看详细说明",
-    "instance": "/api/touristRoutes/asdf",
-    "traceId": "0HMT68PC96F61:00000002"
+  "errors": {
+    "touristRouteId": [
+      "The value 'asdf' is not valid."
+    ]
+  },
+  "type": "无所谓",
+  "title": "数据验证失败",
+  "status": 422,
+  "detail": "请看详细说明",
+  "instance": "/api/touristRoutes/asdf",
+  "traceId": "0HMT68PC96F61:00000002"
 }

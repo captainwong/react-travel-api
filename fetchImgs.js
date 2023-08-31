@@ -6,95 +6,95 @@ const touristRouteDetails = require('./routes/touristRouteDetails.json');
 const parse = require('node-html-parser').parse;
 
 const download = (url, path) => {
-    return fetch(url)
-        .then((res) => {
-            return res.arrayBuffer();
-        })
-        .then((buf) => {
-            fs.writeFile(path, Buffer.from(buf, 'binary'), (err) => {
-                if (err) throw err;
-                console.log(url, path);
-            })
-        }).catch(e => {
-            console.log('error downloading ' + url, e);
-        });
+  return fetch(url)
+    .then((res) => {
+      return res.arrayBuffer();
+    })
+    .then((buf) => {
+      fs.writeFile(path, Buffer.from(buf, 'binary'), (err) => {
+        if (err) throw err;
+        console.log(url, path);
+      })
+    }).catch(e => {
+      console.log('error downloading ' + url, e);
+    });
 }
 
 async function fetchImgs() {
-    let urls = [];
-    productCollections.map((i) => {
-        i.touristRoutes.map((j) => {
-            j.touristRoutePictures.map((k) => {
-                urls.push(k.url);
-            })
-        })
+  let urls = [];
+  productCollections.map((i) => {
+    i.touristRoutes.map((j) => {
+      j.touristRoutePictures.map((k) => {
+        urls.push(k.url);
+      })
+    })
+  })
+
+  touristRoutes.map((i) => {
+    i.touristRoutePictures.map((j) => {
+      urls.push(j.url);
+    })
+  })
+
+  touristRouteDetails.map((i) => {
+    i.touristRoutePictures.map((j) => {
+      urls.push(j.url);
     })
 
-    touristRoutes.map((i) => {
-        i.touristRoutePictures.map((j) => {
-            urls.push(j.url);
-        })
+    const root = parse(i.features);
+    root.querySelectorAll('img').forEach((img) => {
+      urls.push(img.getAttribute('src'));
     })
+  })
 
-    touristRouteDetails.map((i) => {
-        i.touristRoutePictures.map((j) => {
-            urls.push(j.url);
-        })
+  console.log('urls.length=', urls.length);
+  let uniqueUrls = [];
+  urls.forEach((i) => {
+    if (i.startsWith('//')) { // imgs in features has no protocol
+      i = 'http:' + i;
+    }
+    if (i.endsWith('.jp')) { // some urls are *.jp, fix them
+      i += 'g';
+    }
+    if (uniqueUrls.indexOf(i) === -1) {
+      uniqueUrls.push(i);
+    }
+  })
+  console.log('uniqueUrls.length=', uniqueUrls.length);
 
-        const root = parse(i.features);
-        root.querySelectorAll('img').forEach((img) => {
-            urls.push(img.getAttribute('src'));
-        })
+  //uniqueUrls = uniqueUrls.slice(0, 2);
+
+  let imgMap = {};
+  let imgId = 0;
+  let ds = [];
+  uniqueUrls.forEach((url) => {
+    const path = `./images/${imgId}.jpg`;
+    imgMap[url] = imgId++;
+    ds.push(download(url, path));
+  });
+
+  await Promise.all(ds)
+    .then(() => {
+      fs.writeFileSync('./images/imgmap.json', JSON.stringify(imgMap, null, '  '));
     })
-
-    console.log('urls.length=', urls.length);
-    let uniqueUrls = [];
-    urls.forEach((i) => {
-        if (i.startsWith('//')) { // imgs in features has no protocol
-            i = 'http:' + i;
-        }
-        if (i.endsWith('.jp')) { // some urls are *.jp, fix them
-            i += 'g';
-        }
-        if (uniqueUrls.indexOf(i) === -1) {            
-            uniqueUrls.push(i);
-        }
-    })
-    console.log('uniqueUrls.length=', uniqueUrls.length);
-    
-    //uniqueUrls = uniqueUrls.slice(0, 2);
-
-    let imgMap = {};
-    let imgId = 0;
-    let ds = [];
-    uniqueUrls.forEach((url) => {
-        const path = `./images/${imgId}.jpg`;
-        imgMap[url] = imgId++;
-        ds.push(download(url, path));
+    .catch(e => {
+      console.log(e);
     });
-
-    await Promise.all(ds)
-        .then(() => {
-            fs.writeFileSync('./images/imgmap.json', JSON.stringify(imgMap, null, '  '));
-        })
-        .catch(e => {
-            console.log(e);
-        });
 }
 
 fetchImgs();
-    
-const test = async () => {
-    // const path = `./images/0.jpg`;
-    // const data = fs.readFileSync(path);
-    // const base64 = Buffer.from(data, 'binary').toString('base64');
-    // console.log(base64.slice(0, 100));
 
-    // const res = await fetch('https://z3.ax1x.com/2020/12/15/rMlEid.jpg');
-    // const buf = await res.arrayBuffer();
-    // await fs.writeFile('./out.jpg', Buffer.from(buf), (err) => {
-    //     if (err) throw err;
-    // });
+const test = async () => {
+  // const path = `./images/0.jpg`;
+  // const data = fs.readFileSync(path);
+  // const base64 = Buffer.from(data, 'binary').toString('base64');
+  // console.log(base64.slice(0, 100));
+
+  // const res = await fetch('https://z3.ax1x.com/2020/12/15/rMlEid.jpg');
+  // const buf = await res.arrayBuffer();
+  // await fs.writeFile('./out.jpg', Buffer.from(buf), (err) => {
+  //     if (err) throw err;
+  // });
 };
 
 //test();
@@ -145,17 +145,17 @@ const details = "<div class=\"bd\"><p style=\"text-align:center\"><strong><span 
 
 
 function testDom() {
-    const root = parse(details);
+  const root = parse(details);
 
-    //console.log(root.structure);
+  //console.log(root.structure);
 
-    root.querySelectorAll('img').forEach((img) => {
-        //console.log(img); 
-        console.log(img.getAttribute('src'));
-        console.log(img.getAttribute('data-src'));
-        img.removeAttribute('data-src');
-        console.log(img.parentNode.toString());
-    })
+  root.querySelectorAll('img').forEach((img) => {
+    //console.log(img); 
+    console.log(img.getAttribute('src'));
+    console.log(img.getAttribute('data-src'));
+    img.removeAttribute('data-src');
+    console.log(img.parentNode.toString());
+  })
 }
 
 

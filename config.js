@@ -1,8 +1,8 @@
 const config = {
-    jwt: {
-        secret: 'wYGZDqvuyPQzCMfmWBqFumYdn4uyP4Iv',
-        expiresIn: '10h'
-    },
+  jwt: {
+    secret: 'wYGZDqvuyPQzCMfmWBqFumYdn4uyP4Iv',
+    expiresIn: '10h'
+  },
 }
 
 
