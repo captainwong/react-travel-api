@@ -1,49 +1,12 @@
 var express = require('express');
 var router = express.Router();
-const userdb = require('../userdb');
-const jwt = require('jsonwebtoken');
-const config = require('../config');
-const touristRoutes = require('./touristRoutes.json');
-const sleep = require('./sleep');
-
-// router.use((req, res, next) => {
-//   if (!req.headers['authorization']) {
-//     return res.status(401).json('unortherized');
-//   }
-
-//   const data = jwt.verify(req.headers['authorization'], config.jwt.secret);
-//   if (!data || !data.email) {
-//     return res.status(401).json('unortherized');
-//   }
-
-//   req.user = { email: data.email };
-// })
-
-async function checkAuth(req, res, next) {
-  if (!req.auth || !req.auth.email) {
-    return res.status(401).json("unortherized");
-  }
-  const user = userdb.userExists(req.auth.email);
-  if (!user) {
-    return res.status(401).json("unortherized");
-  }
-  req.user = user;
-  await sleep(800);
-  next();
-}
+const userdb = require('../data/userdb');
+const findRoute = require('../data/findRoute');
+const checkAuth = require('../middleware/auth');
 
 router.use(checkAuth);
 
-const findRoute = (id) => {
-  for (let route of touristRoutes) {
-    if (route.id === id) {
-      return route;
-    }
-  }
-  return null;
-}
-
-const getItems = (user) => {
+const getCartItems = (user) => {
   return {
     id: user.id,
     userId: user.id,
@@ -60,7 +23,7 @@ const getItems = (user) => {
 }
 
 router.get('/', async (req, res, next) => {
-  return res.status(200).json(getItems(req.user));
+  return res.status(200).json(getCartItems(req.user));
 });
 
 router.post('/items', async (req, res, next) => {
@@ -71,7 +34,7 @@ router.post('/items', async (req, res, next) => {
   const route = findRoute(req.body.touristRouteId);
   let user = userdb.addCartItem(req.auth.email, req.body.touristRouteId, route.originalPrice, route.price);
 
-  return res.status(200).json(getItems(user));
+  return res.status(200).json(getCartItems(user));
 });
 
 router.delete('/items/:id', async (req, res, next) => {
@@ -94,11 +57,30 @@ router.delete('/items/:id', async (req, res, next) => {
 });
 
 router.delete('/items', async (req, res, next) => {
-  if (!req.auth || !req.auth.email) {
-    return res.status(401).json("unortherized");
-  }
   userdb.clearCart(req.auth.email);
   return res.status(204).end();
+});
+
+router.post('/checkout', async (req, res, next) => {
+  let theOrder = userdb.checkout(req.auth.email);
+  if (!theOrder) {
+    return res.status(400).json({
+      msg: "cart is empty"
+    });
+  }
+  let order = {
+    id: theOrder.id,
+    userId: theOrder.id,
+    orderItems: theOrder.orderItems.map((item) => {
+      return {
+        id: item.id,
+        touristRouteId: item.touristRouteId,
+        touristRoute: findRoute(item.touristRouteId),
+      }
+    }),
+  };
+
+  return res.status(200).json(order);
 });
 
 module.exports = router;

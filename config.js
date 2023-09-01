@@ -3,7 +3,8 @@ const config = {
     secret: 'wYGZDqvuyPQzCMfmWBqFumYdn4uyP4Iv',
     expiresIn: '10h'
   },
-  url: "http://hbwechatserver.com:3001"
+  url: "http://localhost:3001", 
+  sleepms: 20
 }
 
 

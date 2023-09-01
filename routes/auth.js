@@ -2,8 +2,9 @@ var express = require('express');
 var router = express.Router();
 const jwt = require('jsonwebtoken');
 const config = require('../config');
-const sleep = require('./sleep');
-const userdb = require('../userdb');
+const sleep = require('../util/sleep');
+const userdb = require('../data/userdb');
+
 
 router.post('/register', async function (req, res, next) {
   console.log(req.body);
@@ -11,9 +12,12 @@ router.post('/register', async function (req, res, next) {
     return res.status(422).json("email, passowrd and confirmPassword requried");
   }
 
-  userdb.addUser(req.body.email, req.body.password);
+  if (userdb.userExists(req.body.email)) {
+    return res.status(403).json("user exists");
+  }
 
-  await sleep(1000); // for Botton loading spin
+  userdb.addUser(req.body.email, req.body.password);
+  await sleep(config.sleepms); // for Botton loading spin
   return res.status(204).end();
 });
 
@@ -28,7 +32,7 @@ router.post('/login', async function (req, res, next) {
   }
 
   const token = jwt.sign({ email: req.body.email }, config.jwt.secret, { expiresIn: config.jwt.expiresIn });
-  await sleep(1000); // for Botton loading spin
+  await sleep(config.sleepms); // for Botton loading spin
   return res.status(200).json({
     token: token,
   });
