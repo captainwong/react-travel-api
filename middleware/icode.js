@@ -1,3 +1,11 @@
+const valid_icodes = [
+  'foo',
+  'bar',
+  'baz',
+  'D4D928FF7C10128D',
+  'F5F433A587BDBCC7'
+];
+
 const checkIcode = async (req, res, next) => {
   const key = req.headers['x-icode'];
   if (!key) {
@@ -7,8 +15,7 @@ const checkIcode = async (req, res, next) => {
       msg: 'x-icode required',
     });
   }
-  const apiKeys = ['foo', 'bar', 'baz', 'D4D928FF7C10128D', 'F5F433A587BDBCC7'];
-  if (apiKeys.indexOf(key) === -1) {
+  if (valid_icodes.indexOf(key) === -1) {
     return res.status(400).json({
       status: 400,
       msg: 'invalid x-icode',
