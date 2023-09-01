@@ -11,6 +11,7 @@ const parse = require('node-html-parser').parse;
 const sleep = require('./sleep');
 const userdb = require('../userdb');
 const cartRouter = require('./cart');
+const config = require('../config');
 
 router.use('/shoppingCart', cartRouter);
 
