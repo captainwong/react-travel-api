@@ -8,9 +8,9 @@ router.use(checkAuth);
 
 const getCartItems = (user) => {
   return {
-    id: user.id,
+    id: user.cart.id,
     userId: user.id,
-    shoppingCartItems: [...user.cart.map((item) => {
+    shoppingCartItems: [...user.cart.items.map((item) => {
       return {
         id: item.id,
         touristRouteId: item.touristRouteId,
@@ -32,7 +32,7 @@ router.post('/items', async (req, res, next) => {
   }
 
   const route = findRoute(req.body.touristRouteId);
-  let user = userdb.addCartItem(req.auth.email, req.body.touristRouteId, route.originalPrice, route.price);
+  let user = userdb.addCartItem(req.user, req.body.touristRouteId, route.originalPrice, route.price);
 
   return res.status(200).json(getCartItems(user));
 });
@@ -52,17 +52,17 @@ router.delete('/items/:id', async (req, res, next) => {
     ids.push(parseInt(req.params.id));
   }
   console.log('ids', ids);
-  userdb.removeCartItems(req.auth.email, ids);
+  userdb.removeCartItems(req.user, ids);
   return res.status(204).end();
 });
 
 router.delete('/items', async (req, res, next) => {
-  userdb.clearCart(req.auth.email);
+  userdb.clearCart(req.user);
   return res.status(204).end();
 });
 
 router.post('/checkout', async (req, res, next) => {
-  let theOrder = userdb.checkout(req.auth.email);
+  let theOrder = userdb.checkout(req.user);
   if (!theOrder) {
     return res.status(400).json({
       msg: "cart is empty"
@@ -70,7 +70,7 @@ router.post('/checkout', async (req, res, next) => {
   }
   let order = {
     id: theOrder.id,
-    userId: theOrder.id,
+    userId: req.user.id,
     orderItems: theOrder.orderItems.map((item) => {
       return {
         id: item.id,

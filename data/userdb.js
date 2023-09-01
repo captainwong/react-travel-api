@@ -1,31 +1,59 @@
-function CartItem(id, touristRouteId, originalPrice, price) {
-  this.id = id;
+const uuid = require('uuid').v4;
+
+function CartItemId() {
+  this.id = 0;
+  this.next = () => {
+    return ++this.id;
+  }
+}
+
+const cartItemIdMgr = new CartItemId();
+
+function CartItem(touristRouteId, originalPrice, price) {
+  this.id = cartItemIdMgr.next();
   this.touristRouteId = touristRouteId;
   this.originalPrice = originalPrice;
   this.price = price;
 }
 
-function OrderItem(id, cartItem) {
-  this.id = id;
+function Cart(userId) {
+  this.id = uuid();
+  this.userId = userId;
+  this.items = [];
+
+  this.addCartItem = (item) => {
+    this.items.push(item);
+  }
+
+  this.removeCartItems = (ids) => {
+    this.items = this.items.filter((item) => {
+      return !ids.includes(item.id);
+    });
+  }
+
+  this.clear = () => {
+    this.items = [];
+  }
+}
+
+function OrderItem(cartItem) {
+  this.id = uuid();
   this.touristRouteId = cartItem.touristRouteId;
 }
 
-function Order(id, userId) {
-  this.id = id;
+function Order(userId) {
+  this.id = uuid();
   this.userId = userId;
   this.state = "Pending";
   this.orderItems = [];
-  this.orderItemsId = 0;
 }
 
 function User(email, password) {
-  this.id = email;
+  this.id = uuid();
   this.email = email;
   this.password = password;
-  this.cart = [];
-  this.cartItemsId = 0;
+  this.cart = new Cart(this.id);
   this.orders = [];
-  this.ordersId = 0;
 }
 
 let users = {};
@@ -34,7 +62,8 @@ users["test"] = new User("test", "AHqjAvijcygr7Tf");
 
 const userdb = {
   userExists: (email, password) => {
-    return (users.hasOwnProperty(email) && (password ? users[email].password === password : true)) ? users[email] : null;
+    return (users.hasOwnProperty(email) &&
+      (password ? users[email].password === password : true)) ? users[email] : null;
   },
 
   addUser: (email, password) => {
@@ -46,29 +75,19 @@ const userdb = {
   },
 
   // return user
-  addCartItem: (email, touristRouteId, originalPrice, price) => {
-    let user = users[email];
-    user.cart.push(new CartItem(++user.cartItemsId, touristRouteId, originalPrice, price));
+  addCartItem: (user, touristRouteId, originalPrice, price) => {
+    user.cart.addCartItem(new CartItem(touristRouteId, originalPrice, price));
     return user;
   },
 
   // return user
-  removeCartItems: (email, ids) => {
-    console.log('removeCartItems', ids);
-    let user = users[email];
-    try {
-      user.cart = user.cart.filter((item) => {
-        return !ids.includes(item.id);
-      });
-    } catch (e) {
-      console.log(e);
-    }
+  removeCartItems: (user, ids) => {
+    user.cart.removeCartItems(ids);
     return user;
   },
 
-  clearCart: (email) => {
-    users[email].cart = [];
-    users[email].cartItemsId = 0;
+  clearCart: (user) => {
+    user.cart.clear();
   },
 
   debug: () => {
@@ -76,27 +95,34 @@ const userdb = {
     return users;
   },
 
-  checkout: (email) => {
-    let user = users[email];
+  checkout: (user) => {
     if (user.cart.length === 0) {
       return null;
     }
 
-    let cart = user.cart;
-    user.cart = [];
-    user.cartItemsId = 0;
+    let cart = user.cart.items;
+    user.cart.clear();
 
-    let order = new Order(++user.ordersId, user.id);
+    let order = new Order(user.id);
     cart.forEach((item) => {
-      let orderItem = new OrderItem(++order.orderItemsId, item);
-      order.orderItems.push(orderItem);
+      order.orderItems.push(new OrderItem(item));
     })
     user.orders.push(order);
     return order;
   },
 
-  orders: (email) => {
-    return users[email].orders;
+  getOrders: (user) => {
+    return user.orders;
+  },
+
+  placeOrder: (user, orderId) => {
+    for (let order of user.orders) {
+      if (order.id === orderId) {
+        order.state = "Completed";
+        return order;
+      }
+    }
+    return null;
   },
 }
 
