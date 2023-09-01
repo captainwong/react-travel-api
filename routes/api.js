@@ -47,7 +47,7 @@ function img2Local(url) {
     // return base64;
     const jpg = path.resolve(__dirname, `../images/${imgMap[url]}.jpg`);
     if (fs.existsSync(jpg)) {
-      url = `http://127.0.0.1:3001/${imgMap[url]}.jpg`;
+      url = `${config.url}/${imgMap[url]}.jpg`;
       return url;
     }
   }
